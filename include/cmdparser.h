@@ -14,11 +14,13 @@ class CmdParser {
       _usage = "Usage: " + string(_argv[0]) + " ";
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
     typedef initializer_list<string> strlist;
 
     CmdParser& add(string option, strlist description_list, bool isMandatory = true, string defaultArg = "") {
       return _registerOption<strlist>(option, description_list, isMandatory, defaultArg);
     }
+#endif
 
     CmdParser& add(string option, string description, bool isMandatory = true, string defaultArg = "") {
       return _registerOption<string>(option, description, isMandatory, defaultArg);
@@ -26,7 +28,7 @@ class CmdParser {
     }
 
     CmdParser& addGroup(string description) {
-      if (description.back() == ':')
+      if (description[description.size() - 1] == ':')
 	description = description.substr(0, description.size() - 1);
 
       _options += "\n" + description + "\n";
@@ -34,7 +36,7 @@ class CmdParser {
     }
 
     string find(string option) const {
-      auto itr = _arguments.find(option);
+      map<string, Arg>::const_iterator itr = _arguments.find(option);
 
       if (itr == _arguments.end())
 	return string();
@@ -53,7 +55,7 @@ class CmdParser {
       if ( this->_lookingForHelp() )
 	this->showUsageAndExit();
 
-      for (auto i=_arguments.begin(); i != _arguments.end(); ++i) {
+      for (map<string, Arg>::iterator i=_arguments.begin(); i != _arguments.end(); ++i) {
 	const string& opt = i->first;
 	Arg& arg = i->second;
 	arg.parameter = this->_find(opt);
@@ -96,6 +98,13 @@ class CmdParser {
 	  + this->_defaultArgStr();
       }
 
+      void _init(string opt, bool o, string darg) {
+	option = opt;
+	optional = o;
+	default_arg = darg;
+      }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
       Arg(string opt, strlist des_list, bool o, string darg) {
 	_init(opt, o, darg);
 
@@ -103,12 +112,6 @@ class CmdParser {
 	  this->_optionStr()
 	  + this->_getDescription(des_list)
 	  + this->_defaultArgStr();
-      }
-
-      void _init(string opt, bool o, string darg) {
-	option = opt;
-	optional = o;
-	default_arg = darg;
       }
 
       string _getDescription(const strlist& des_list) {
@@ -122,6 +125,7 @@ class CmdParser {
 
 	return des;
       }
+#endif
 
       string _optionStr() {
 	string opt = "  " + option;
@@ -152,7 +156,7 @@ class CmdParser {
 	this->parameter = this->default_arg;
       }
 
-      static const size_t PADDING_RIGHT = 16;
+      static const size_t PADDING_RIGHT = 24;
 
       string option;
       string description;

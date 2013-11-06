@@ -8,7 +8,7 @@
 class Profile {
 public:
     void tic();
-    void toc();
+    double toc();
 private:
     time_t _time;
 };

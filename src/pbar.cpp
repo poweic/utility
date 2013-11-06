@@ -1,22 +1,36 @@
 #include <pbar.h>
+using namespace std;
+
+extern "C" void libpbar_is_present(void) {}
 
 ProgressBar::ProgressBar(string status) {
   _status = status;
-  std::cout << _status << "\t0 %\t[";
-  for(int i=0; i<MAX_BAR_LENGTH+1; ++i)
-    std::cout << " ";
-  std::cout << "]";
-  std::cout.flush();
+  this->refresh(0);
 }
 
 void ProgressBar::refresh(double percentage) {
-  printf("\r%s\t%.1f %%\t[", _status.c_str(), percentage*100);
-  std::cout << BLUE;
+  this->refresh(percentage, _status);
+}
+
+void ProgressBar::refresh(size_t i, size_t N) {
+  this->refresh((double) (i + 1) / N, _status);
+}
+
+void ProgressBar::refresh(size_t i, size_t N, string status) {
+  this->refresh((double) (i + 1) / N, status);
+}
+
+void ProgressBar::refresh(double percentage, string status) {
+  printf("\r%s\t%.1f %%\t[", status.c_str(), percentage*100);
+  cout << BLUE;
+
   for(int i=0; i<percentage * MAX_BAR_LENGTH; ++i)
-    std::cout << "="; 
+    cout << "="; 
+
   if(percentage != 1)
-    std::cout << ">" << COLOREND;	
+    cout << ">" << COLOREND;	
   else
-    std::cout << "=" << COLOREND << "]\t" << GREEN << "v" << COLOREND << endl;
-  std::cout.flush();
+    cout << "=" << COLOREND << "]\t" << GREEN << "v" << COLOREND << endl;
+
+  cout.flush();
 }

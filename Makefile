@@ -55,7 +55,7 @@ obj/%.d: %.cpp
 
 .PHONY: 
 clean: ctags
-	rm -rf obj/*.o lib/*.a
+	rm -rf obj/* lib/*.a
 	rm -rf example 
 cleanest: ctags clean
 	rm -rf obj/*

@@ -1,7 +1,7 @@
 #ifndef _STATISTIC_H
 #define _STATISTIC_H
 
-#pragma GCC diagnostic ignored "-Wdiv-by-zero"
+// #pragma GCC diagnostic ignored "-Wdiv-by-zero"
 
 #include <cmath>
 #include <string>
@@ -24,6 +24,8 @@ namespace util {
       MyException() {}; // not meant to be called
     public:
       MyException(string strError): m_strError(strError) {}
+
+      const char* what() const { return m_strError.c_str(); }
       string getError() { return m_strError; }
   };
 

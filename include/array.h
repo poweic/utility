@@ -14,6 +14,7 @@
 #include <util.h>
 #include <iomanip>
 #include <cmath>
+#include <vector>
 using namespace std;
 
 template <class T>
@@ -77,6 +78,13 @@ public:
 
   T const& operator [] (size_t i) const {
     return _data[i]; 
+  }
+
+  operator std::vector<T> () {
+    std::vector<T> vec(_size);
+    for (size_t i=0; i<_size; ++i)
+      vec[i] = _data[i];
+    return vec;
   }
 
   Array<T>& operator = (const Array<T>& arr) {

@@ -1,6 +1,8 @@
 #include <util.h>
 using namespace std;
 
+extern "C" void libutil_is_present(void) {}
+
 namespace util {
 
   void appendSlashAtTheEnd(string& str) {
