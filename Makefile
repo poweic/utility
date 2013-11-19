@@ -26,7 +26,7 @@ o3: CXX+=-o3
 o3: all
 
 example: example.cpp libs
-	$(CXX) -o $@ $< $(CPPFLAGS) -L lib/ -lmatrix
+	$(CXX) $(CPPFLAGS) -o $@ $< -L lib/ -lmatrix
 
 libs: $(OBJ) $(addprefix lib/, $(LIBS))
 lib/lib%.a: %.o %.cpp
