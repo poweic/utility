@@ -1,6 +1,6 @@
 CC=g++ -Wall
 CXX=g++ -Wall
-CFLAGS=-std=c++0x
+CFLAGS=
 
 INCLUDE=-I include/
 CPPFLAGS=$(CFLAGS) $(INCLUDE)

@@ -492,55 +492,15 @@ void Matrix2D<T>::printDiag(int precision) const {
 
 template <typename T>
 void Matrix2D<T>::print(int precision) const {
-  string format = "%." + to_string(precision) + "f ";
+  stringstream ss;
+  ss << precision;
+  string format = "%." + ss.str() + "f ";
   for(size_t i=0; i<_rows; i++) {
-    for(size_t j=0; j<_cols; j++) {
+    for(size_t j=0; j<_cols; j++)
       printf(format.c_str(), _element[i][j]);
-    }
     printf("\n");
   }
   printf("\n");
-
-  /*int maxLength = 0;
-  for(size_t i=0; i<_rows; ++i) {
-    for(size_t j=0; j<_cols; ++j) {
-      double temp = abs((double) _element[i][j]);
-      double l = (temp > 1) ? (ceil(log10(temp))) : (precision);
-
-      if(_element[i][j] < 0)
-	++l;
-      if(l > maxLength)
-	maxLength = l;
-    }
-  }
-
-  char pFormat[20];
-  sprintf(pFormat, "%s%df", "%.", precision);
-  maxLength += (maxLength < precision) ? (precision) : (3);
-
-  cout << endl;
-  for(size_t i=0; i<_rows; i++) {
-    if(i == 0)
-      cout << " / ";
-    else if(i == _rows-1)
-      cout << " \\ ";
-    else
-      cout << "|  ";
-
-    for(size_t j=0; j<_cols; j++) {
-      char buf[20];
-      sprintf(buf, pFormat, (double) _element[i][j]);
-      cout << setw(maxLength) << buf << " ";
-    }
-
-    if(i == 0)
-      cout << " \\";
-    else if(i == _rows-1)
-      cout << " /";
-    else
-      cout << "  |";
-    cout << endl;
-  }*/
 }
 
 // Load mat file
