@@ -238,11 +238,10 @@ class CmdParser {
     }
 
     void _appendUsage(bool optional, string option) {
-
       if (optional)
 	_usage += " [" + option + "]";
       else
-	_usage += " <" + option + ">";
+	_usage += " " + option;
     }
 
     // ===== Static Utility Functions =====
