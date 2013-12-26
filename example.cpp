@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
 
   string a = cmdParser[1];
   string b = cmdParser[2];
-  string type = cmdParser["--type"];
+  size_t type = cmdParser["--type"];
   bool verbose = cmdParser["--verbose"];
   string config_file = cmdParser["--config"];
 

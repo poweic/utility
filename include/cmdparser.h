@@ -22,6 +22,7 @@ class CmdParser {
 	AutoType(string str): _str(str) {}
 	operator std::string () { return _str; }
 	operator int    () { return str2int(_str); }
+	operator size_t () { return str2int(_str); }
 	operator float  () { return str2float(_str); }
 	operator double () { return str2double(_str); }
 	operator bool   () { 
