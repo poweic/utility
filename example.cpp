@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
 
   cmdParser.addGroup("Generic options:")
     .add("input-file")
-    .add("output-file")
+    .add("output-file", false)
     .add("--type", "choose one of the following type of algorithm\n"
 	"0 -- quicksort\n"
 	"1 -- shellsort\n"
@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
   cmdParser
     .addGroup("Other options:")
     .add("--verbose", "log everythings while running program", "false")
-    .add("--config", "filename of configuration", "config.txt");
+    .add("--config", "filename of configuration");
 
   cmdParser
     .addGroup("Example: ./example -f a.txt -o b.txt --verbose");

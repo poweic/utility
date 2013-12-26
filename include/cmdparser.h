@@ -39,23 +39,26 @@ class CmdParser {
       _usage = "Usage: " + string(_argv[0]) + " ";
     }
 
-    CmdParser& add(string option, string description = "", string defaultArg = "") {
+    CmdParser& add(string option, bool mandatory = true) {
       static size_t counter = 0;
+      string description = option;
+      option = int2str(++counter);
+      _appendUsage(!mandatory, description);
+
+      Arg arg(option, description, !mandatory, "");
+      _arguments[option] = arg;
+
+      return *this;
+    }
+
+    CmdParser& add(string option, const char* description, string defaultArg = "") {
 
       bool optional = !defaultArg.empty();
-      
-      _appendUsage(optional, option);
-
-      if (description.empty()) {
-	description = option;
-	option = int2str(++counter);
-      }
 
       Arg arg(option, description, optional, defaultArg);
       _arguments[option] = arg;
-
-      if (!isNumber(option))
-	_options += arg.getDescription();
+      _options += arg.getDescription();
+      _appendUsage(optional, option);
 
       return *this;
     }
@@ -241,7 +244,7 @@ class CmdParser {
       if (optional)
 	_usage += " [" + option + "]";
       else
-	_usage += " " + option;
+	_usage += " <" + option + ">";
     }
 
     // ===== Static Utility Functions =====
