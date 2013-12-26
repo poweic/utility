@@ -16,21 +16,6 @@ class CmdParser {
 
   private:
 
-    static int str2int(string str) {
-      assert(isNumber(str));
-      return ::atoi(str.c_str());
-    }
-
-    static float str2float(string str) {
-      assert(isFloat(str));
-      return ::atof(str.c_str());
-    }
-
-    static double str2double(string str) {
-      assert(isFloat(str));
-      return ::atof(str.c_str());
-    }
-
     class AutoType {
       public:
 
@@ -132,7 +117,7 @@ class CmdParser {
 	option = opt;
 	optional = o;
 	default_arg = darg;
-	description = des;
+	description = replace_all(des, "\n", "\n" + getPadding());
 	parameter = default_arg;
       }
 
@@ -259,6 +244,7 @@ class CmdParser {
 	_usage += " <" + option + ">";
     }
 
+    // ===== Static Utility Functions =====
     static bool isNumber(const std::string& s) {
       string::const_iterator it = s.begin();
       while (it != s.end() && std::isdigit(*it))
@@ -278,6 +264,31 @@ class CmdParser {
       stringstream ss;
       ss << n;
       return ss.str();
+    }
+
+    static string replace_all(const string& str, const string &token, const string &s) {
+      string result(str);
+      size_t pos = 0;
+      while((pos = result.find(token, pos)) != string::npos) {
+	result.replace(pos, token.size(), s);
+	pos += s.size();
+      }
+      return result;
+    }
+    
+    static int str2int(string str) {
+      assert(isNumber(str));
+      return ::atoi(str.c_str());
+    }
+
+    static float str2float(string str) {
+      assert(isFloat(str));
+      return ::atof(str.c_str());
+    }
+
+    static double str2double(string str) {
+      assert(isFloat(str));
+      return ::atof(str.c_str());
     }
 
     int _argc;

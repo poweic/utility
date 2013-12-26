@@ -9,7 +9,10 @@ int main(int argc, char* argv[]) {
   cmdParser.addGroup("Generic options:")
     .add("input-file")
     .add("output-file")
-    .add("--type", "type of algorithm");
+    .add("--type", "choose one of the following type of algorithm\n"
+	"0 -- quicksort\n"
+	"1 -- shellsort\n"
+	"2 -- bubblesort", "0");
 
   cmdParser
     .addGroup("Other options:")
