@@ -90,6 +90,7 @@ namespace util {
 #define P_HIGH  0.97575
   // Output range under the accuracy of long double
 #define MAX_DEVIATION ((double) 1/0)
+#pragma GCC diagnostic ignored "-Wdiv-by-zero"
 
   long double normsinv(long double p) {
     long double x;
