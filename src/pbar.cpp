@@ -21,16 +21,26 @@ void ProgressBar::refresh(size_t i, size_t N, string status) {
 }
 
 void ProgressBar::refresh(double percentage, string status) {
-  printf("\r%s\t%.1f %%\t[", status.c_str(), percentage*100);
+  printf("\r%s\t%4.1f %%\t[", status.c_str(), percentage*100);
   cout << BLUE;
 
-  for(int i=0; i<percentage * MAX_BAR_LENGTH; ++i)
+  size_t L = percentage * MAX_BAR_LENGTH;
+
+  for(size_t i=0; i<L; ++i)
     cout << "="; 
 
-  if(percentage != 1)
-    cout << ">" << COLOREND;	
+  if (percentage < 1)
+    cout << ">" << COLOREND;
   else
-    cout << "=" << COLOREND << "]\t" << GREEN << "v" << COLOREND << endl;
+    cout << "=" << COLOREND;
 
+  for (size_t i=L+1; i<MAX_BAR_LENGTH; ++i)
+    cout << " ";
+
+  cout << "]\t";
+
+  if (percentage >= 1)
+    cout << GREEN << "v" << COLOREND << endl;
+    
   cout.flush();
 }
