@@ -2,54 +2,87 @@
 #define _CMD_PARSER_H
 
 #include <iostream>
+#include <cstdlib>
+#include <cstdio>
+#include <cassert>
+#include <sstream>
 #include <string>
 #include <map>
-#include <cstdlib>
+#include <algorithm>
 
 using namespace std;
 
 class CmdParser {
+
+  private:
+
+    class AutoType {
+      public:
+
+	AutoType(string str): _str(str) {}
+	operator std::string () { return _str; }
+	operator int    () { return str2int(_str); }
+	operator size_t () { return str2int(_str); }
+	operator float  () { return str2float(_str); }
+	operator double () { return str2double(_str); }
+	operator bool   () { 
+	  assert(_str == "true" || _str == "false");
+	  return _str == "true";
+	}
+
+      private:
+	string _str;
+    };
+  
   public:
     CmdParser(int argc, char** argv): _argc(argc), _argv(argv), _usage(""), _options("") {
       _usage = "Usage: " + string(_argv[0]) + " ";
     }
 
-    typedef initializer_list<string> strlist;
-    CmdParser& regOpt(string option, strlist description_list, bool isMandatory = true, string defaultArg = "") {
-      return _registerOption<strlist>(option, description_list, isMandatory, defaultArg);
-    }
-    CmdParser& regOpt(string option, string description, bool isMandatory = true, string defaultArg = "") {
-      return _registerOption<string>(option, description, isMandatory, defaultArg);
+    CmdParser& add(string option, bool mandatory = true) {
+      static size_t counter = 0;
+      string description = option;
+      option = int2str(++counter);
+      _appendUsage(!mandatory, description);
 
-    }
-
-    template <typename T>
-    CmdParser& _registerOption(string option, T description, bool isMandatory, string defaultArg = "") {
-
-      bool optional = !isMandatory;
-      Arg arg(option, description, optional, defaultArg);
-
+      Arg arg(option, description, !mandatory, "");
       _arguments[option] = arg;
-      this->_appendUsage(arg);
+
+      return *this;
+    }
+
+    CmdParser& add(string option, const char* description, string defaultArg = "") {
+
+      bool optional = !defaultArg.empty();
+
+      Arg arg(option, description, optional, defaultArg);
+      _arguments[option] = arg;
       _options += arg.getDescription();
+      _appendUsage(optional, option);
 
       return *this;
     }
 
     CmdParser& addGroup(string description) {
-      if (description.back() == ':')
+      if (description[description.size() - 1] == ':')
 	description = description.substr(0, description.size() - 1);
 
-      _options += "\n" + description + ":\n";
+      _options += "\n" + description + "\n";
       return *this;
     }
 
-    string find(string option) const {
-      auto itr = _arguments.find(option);
+    AutoType operator[] (int argNumber) const {
+      return find(int2str(argNumber));
 
-      if (itr == _arguments.end())
-	return string();
+    }
 
+    AutoType operator[] (string option) const {
+      return find(option);
+    }
+
+    AutoType find(string option) const {
+      map<string, Arg>::const_iterator itr = _arguments.find(option);
+      assert(itr != _arguments.end());
       return itr->second.parameter;
     }
 
@@ -59,25 +92,24 @@ class CmdParser {
       cout << _options << endl;
       exit(-1);
     }
+
     bool isOptionLegal() {
       if ( this->_lookingForHelp() )
 	this->showUsageAndExit();
 
-      for (auto i=_arguments.begin(); i != _arguments.end(); ++i) {
+      return this->parse();
+    }
+    
+    void showAll() {
+      for (map<string, Arg>::iterator i=_arguments.begin(); i != _arguments.end(); ++i) {
 	const string& opt = i->first;
-	Arg& arg = i->second;
-	arg.parameter = this->_find(opt);
+	const string& parm = i->second.parameter;
 
-	if (arg.parameter == "") {
-	  if (!arg.optional)
-	    return this->_illegalOption(opt);
-
-	  arg.useDefault();
-	}
-	//cout << "Option \"" + opt + "\" = \"" + arg.parameter + "\"" << endl;
+	if (isNumber(opt))
+	  printf("argument #%d:	%s\n", str2int(opt), parm.c_str());
+	else
+	  printf("option %s: %s\n", opt.c_str(), parm.c_str());
       }
-
-      return true;
     }
 
   private:
@@ -86,72 +118,43 @@ class CmdParser {
       Arg() {}
 
       Arg(string opt, string des, bool o, string darg) {
-	_init(opt, o, darg);
-
-	description =
-	  this->_optionStr()
-	  + des + "\n"
-	  + this->_defaultArgStr();
-      }
-
-      Arg(string opt, strlist des_list, bool o, string darg) {
-	_init(opt, o, darg);
-
-	description =
-	  this->_optionStr()
-	  + this->_getDescription(des_list)
-	  + this->_defaultArgStr();
-      }
-
-      void _init(string opt, bool o, string darg) {
 	option = opt;
 	optional = o;
 	default_arg = darg;
+	description = replace_all(des, "\n", "\n" + getPadding());
+	parameter = default_arg;
       }
 
-      string _getDescription(const strlist& des_list) {
-	string des;
-	int counter = 0;
-	for (auto& d: des_list) {
-	  if (counter++ != 0)
-	    des += this->getPadding();
-	  des += d + "\n";
-	}
-
-	return des;
-      }
-
-      string _optionStr() {
+      string _optionStr() const {
 	string opt = "  " + option;
 	opt.resize(PADDING_RIGHT, ' ');
 	opt += "\t";
 	return opt;
       }
 
-      string getPadding() {
+      string getPadding() const {
 	string padding;
 	padding.resize(PADDING_RIGHT, ' ');
 	padding += "\t";
 	return padding;
       }
 
-      string _defaultArgStr() {
+      string _defaultArgStr() const {
 	if (optional && default_arg != "")
-	  return this->getPadding() + "(default = " + default_arg + ")\n";
+	  return getPadding() + "(default = " + default_arg + ")\n";
 
 	return "";
       }
 
-      string getDescription() {
-	return description;
+      string getDescription() const {
+	return _optionStr() + description + "\n" + _defaultArgStr();
       }
 
-      ///Arg(): optional(false) {}
-
-      void useDefault() {
-	this->parameter = this->default_arg;
+      string getDefaultArg() const {
+	return default_arg;
       }
-      static const size_t PADDING_RIGHT = 16;
+
+      static const size_t PADDING_RIGHT = 24;
 
       string option;
       string description;
@@ -160,30 +163,74 @@ class CmdParser {
       string parameter;
     };
 
-    string _find(const string& option) {
+    bool parse() {
+
+      size_t counter = 0;
+
       for(int i=1; i<_argc; ++i) {
 	string arg(_argv[i]);
 
-	if (arg == option && i+1<_argc)
-	  return _argv[i+1];
-
 	size_t pos = arg.find_first_of('=');
-	if (pos == string::npos)
-	  continue;
+	if (pos == string::npos) {
 
-	string left = arg.substr(0, pos);
-	string right = arg.substr(pos + 1);
-	if (left == option)
-	  return right;
+	  if (has(arg)) {
+	    if (i+1 >= _argc)
+	      return miss(_arguments[arg]);
+	    _arguments[arg].parameter = _argv[++i];
+	  }
+	  else {
+	    if (!has(counter + 1))
+	      return unknown(arg);
+
+	    _arguments[int2str(counter + 1)].parameter = arg;
+	    ++counter;
+	  }
+	}
+	else {
+	  string left = arg.substr(0, pos);
+	  string right = arg.substr(pos + 1);
+
+	  if (!has(left))
+	    return unknown(left);
+
+	  if (right.empty())
+	    return miss(_arguments[left]);
+
+	  _arguments[left].parameter = right;
+	}
       }
 
-      return string();
+      map<string, Arg>::iterator itr = _arguments.begin();
+      for (; itr != _arguments.end(); ++itr) {
+	const Arg& arg = itr->second;
+	if (arg.parameter.empty() && !arg.optional)
+	  return miss(arg);
+      }
+
+      return true;
     }
-    bool _illegalOption(const string& opt) const {
-      cout << "Missing argument after " + opt << endl;
-      //cout << "Try with --help for more information." << endl;
+
+    bool miss(const Arg& arg) const {
+      if (isNumber(arg.option))
+	cerr << "Missing argument " + arg.description << endl;
+      else
+	cerr << "Missing argument after " + arg.option << endl;
       return false;
     }
+
+    bool unknown(string opt) {
+      cerr << "Unknown option " + opt << endl;
+      return false;
+    }
+
+    bool has(string arg) {
+      return _arguments.count(arg) > 0;
+    }
+
+    bool has(int n) {
+      return _arguments.count(int2str(n)) > 0;
+    }
+
     bool _lookingForHelp() const {
       string help("--help");
       for (int i=1; i<_argc; ++i) {
@@ -192,11 +239,59 @@ class CmdParser {
       }
       return false;
     }
-    void _appendUsage(const Arg& arg) {
-      if (arg.optional)
-	_usage += " [" + arg.option + " ]";
+
+    void _appendUsage(bool optional, string option) {
+      if (optional)
+	_usage += " [" + option + "]";
       else
-	_usage += " <" + arg.option + " >";
+	_usage += " <" + option + ">";
+    }
+
+    // ===== Static Utility Functions =====
+    static bool isNumber(const std::string& s) {
+      string::const_iterator it = s.begin();
+      while (it != s.end() && std::isdigit(*it))
+	++it;
+      return !s.empty() && it == s.end();
+    }
+
+    static bool isFloat( string myString ) {
+      std::istringstream iss(myString);
+      float f;
+      iss >> noskipws >> f; // noskipws considers leading whitespace invalid
+      // Check the entire string was consumed and if either failbit or badbit is set
+      return iss.eof() && !iss.fail(); 
+    }
+
+    static string int2str(int n) {
+      stringstream ss;
+      ss << n;
+      return ss.str();
+    }
+
+    static string replace_all(const string& str, const string &token, const string &s) {
+      string result(str);
+      size_t pos = 0;
+      while((pos = result.find(token, pos)) != string::npos) {
+	result.replace(pos, token.size(), s);
+	pos += s.size();
+      }
+      return result;
+    }
+    
+    static int str2int(string str) {
+      assert(isNumber(str));
+      return ::atoi(str.c_str());
+    }
+
+    static float str2float(string str) {
+      assert(isFloat(str));
+      return ::atof(str.c_str());
+    }
+
+    static double str2double(string str) {
+      assert(isFloat(str));
+      return ::atof(str.c_str());
     }
 
     int _argc;
@@ -205,7 +300,6 @@ class CmdParser {
     string _usage;
     string _options;
     map<string, Arg> _arguments;
-    //map<string, string> _default;
 };
 
 #endif // _CMD_PARSER_H

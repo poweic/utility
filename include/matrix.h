@@ -1,7 +1,7 @@
 #ifndef _MATRIX_2D_H
 #define _MATRIX_2D_H
 
-#pragma GCC diagnostic ignored "-Wunused-result"
+//#pragma GCC diagnostic ignored "-Wunused-result"
 
 #ifndef MAX_BUFFER_LENGTH
 #define MAX_BUFFER_LENGTH 262144
@@ -16,21 +16,17 @@
 #include <string>
 #include <cstring>
 
-#include <vector.h>
+//#include <vector.h>
+#include <array.h>
 #include <sorting.h>
+#include <stdexcept>
 
 using namespace std;
 
 template <typename T> class Matrix2D;
 
-template <typename T>
-Matrix2D<T> operator*(double c, const Matrix2D<T>& rhs);
-
-template <typename T>
-Matrix2D<T> operator*(const MyVector<T>& vector, const Matrix2D<T>& mat);
-
-template <typename T>
-Matrix2D<T> operator*(const Matrix2D<T>& mat, const MyVector<T>& vector);
+// template <typename T> Matrix2D<T> operator*(const MyVector<T>& vector, const Matrix2D<T>& mat);
+// template <typename T> Matrix2D<T> operator*(const Matrix2D<T>& mat, const MyVector<T>& vector);
 
 template <typename T>
 class Matrix2D {
@@ -42,7 +38,7 @@ public:
     ~Matrix2D();
 
     // Conversion 
-    operator Array<T>();
+    //operator Array<T>();
 
     // Assignment
     Matrix2D<T>& operator = (const Matrix2D<T>& rhs);
@@ -51,6 +47,7 @@ public:
     template <typename S> Matrix2D<T>& operator = (const Matrix2D<S>& rhs);
 
     // Get Function
+    size_t size() const { return _rows * _cols; }
     size_t getRows() const { return _rows; }
     size_t getCols() const { return _cols; }
    
@@ -61,9 +58,8 @@ public:
     T* const& operator[](int row) const; 
 
     // Friend (NOTE!! This function must be placed before operator*)
-    friend Matrix2D<T> operator*<T>(double, const Matrix2D<T>&);
-    friend Matrix2D<T> operator*<T>(const MyVector<T>&, const Matrix2D<T>&);
-    friend Matrix2D<T> operator*<T>(const Matrix2D<T>&, const MyVector<T>&);
+    // friend Matrix2D<T> operator*<T>(const MyVector<T>&, const Matrix2D<T>&);
+    // friend Matrix2D<T> operator*<T>(const Matrix2D<T>&, const MyVector<T>&);
     //friend ofstream& operator << <> (ofstream& ofs, const Matrix2D<T>& matrix);
 
     // Math Operation
@@ -112,7 +108,6 @@ protected:
    
     T** _element;
 };
-typedef Matrix2D<double> mat;
 
 template <typename T>
 class DataSheet: public Matrix2D<T> {
@@ -131,25 +126,25 @@ int getFileLineNumber(string filename);
 int getFileColumnNumber(string filename);
 
 template <typename T>
-Matrix2D<T> operator*(double c, Matrix2D<T>& rhs) {
+Matrix2D<T> operator*(T c, const Matrix2D<T>& rhs) {
     return rhs*c;
 }
 
-template <typename T>
+/*template <typename T>
 Matrix2D<T> operator*(const MyVector<T>& vector, const Matrix2D<T>& mat) {
     Matrix2D<T> temp(1, vector.size());
     memcpy(temp._element[0], &vector[0], vector.size()*sizeof(T));
     return temp*mat;
-}
+}*/
 
-template <typename T>
+/*template <typename T>
 Matrix2D<T> operator*(const Matrix2D<T>& mat, const MyVector<T>& vector) {
     Matrix2D<T> temp(vector.size(), 1);
     for(int i=0; i<vector.size(); ++i)
 	temp._element[i][0] = vector[i];
     return mat*temp;
-}
+}*/
 
-double diagMatDet(const mat& m);
+double diagMatDet(const Matrix2D<double>& m);
 
 #endif

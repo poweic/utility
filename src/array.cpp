@@ -9,6 +9,8 @@ template <> Array<string>::Array(size_t s): _data(0), _size(0), _capacity(0) {
     _data = new string[_capacity];
 }
 
+extern "C" void libarray_is_present(void) {}
+
 #define _optimize_constructor_for_type(T)   \
 template <> Array<T>::Array(size_t s) {	    \
   _init(s);				    \

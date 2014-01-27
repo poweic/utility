@@ -1,6 +1,6 @@
 CC=g++ -Wall
 CXX=g++ -Wall
-CFLAGS=-std=c++0x
+CFLAGS=
 
 INCLUDE=-I include/
 CPPFLAGS=$(CFLAGS) $(INCLUDE)
@@ -26,7 +26,7 @@ o3: CXX+=-o3
 o3: all
 
 example: example.cpp libs
-	$(CXX) -o $@ $< $(CPPFLAGS) -L lib/ -lmatrix
+	$(CXX) $(CPPFLAGS) -o $@ $< -L lib/ -lmatrix -lpbar
 
 libs: $(OBJ) $(addprefix lib/, $(LIBS))
 lib/lib%.a: %.o %.cpp
@@ -55,7 +55,7 @@ obj/%.d: %.cpp
 
 .PHONY: 
 clean: ctags
-	rm -rf obj/*.o lib/*.a
+	rm -rf obj/* lib/*.a
 	rm -rf example 
 cleanest: ctags clean
 	rm -rf obj/*

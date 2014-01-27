@@ -1,6 +1,8 @@
 #include <matrix.h>
 using namespace std;
 
+extern "C" void libmatrix_is_present(void) {}
+
 template <typename T>
 Matrix2D<T>::Matrix2D(): _element(NULL) {
   resize(1, 1);
@@ -21,7 +23,7 @@ Matrix2D<T>::Matrix2D(string filename, int max_rows, int max_cols): _element(NUL
   int rows = getFileLineNumber(filename);
   int cols = getFileColumnNumber(filename);
   if(rows <= 0 || cols <= 0 || max_rows < 0 || max_cols < 0)
-    throw util::MyException("Failed to construct Matrix2D, invalid col/row number");
+    throw runtime_error("Failed to construct Matrix2D, invalid col/row number");
 
   if(max_rows != 0)
     rows = MIN(max_rows, rows);
@@ -147,7 +149,7 @@ Matrix2D<T> Matrix2D<T>::operator+(const Matrix2D<T>& rhs) const {
 template <typename T>
 Matrix2D<T>& Matrix2D<T>::operator+=(const Matrix2D<T>& rhs) {
   if(!isMatched(rhs))
-    throw util::MyException("In operator +=, matrix dimensions mismatched.");
+    throw runtime_error("In operator +=, matrix dimensions mismatched.");
 
   for(size_t i=0; i<_rows; ++i) {
     for(size_t j=0; j<_cols; ++j)
@@ -166,7 +168,7 @@ Matrix2D<T> Matrix2D<T>::operator-(const Matrix2D<T>& rhs) const {
 template <typename T>
 Matrix2D<T>& Matrix2D<T>::operator-=(const Matrix2D<T>& rhs) {
   if(!isMatched(rhs))
-    throw util::MyException("In operator -=, matrix dimensions mismatched.");
+    throw runtime_error("In operator -=, matrix dimensions mismatched.");
 
   for(size_t i=0; i<_rows; i++) {
     for(size_t j=0; j<_cols; ++j)
@@ -361,7 +363,7 @@ Matrix2D<T> Matrix2D<T>::operator~() const {
 }
 
 // Type Conversion (Matrix => Array)
-template <typename T>
+/*template <typename T>
 Matrix2D<T>::operator Array<T>() {
   Array<T> arr(_size);
   int idx=0;
@@ -370,7 +372,7 @@ Matrix2D<T>::operator Array<T>() {
       arr[idx++] = _element[i][j];
   }
   return arr;
-}
+}*/
 
 // Size Compatible
 template <typename T>
@@ -412,15 +414,20 @@ void Matrix2D<T>::resize(int rows, int cols) {
 
 template <typename T>
 void Matrix2D<T>::saveas(string filename) const {
-  fstream oFile;
-  oFile.open(filename.c_str(), fstream::out);
+  //fstream oFile;
+  FILE* fid = fopen(filename.c_str(), "w");
+  //oFile.open(filename.c_str(), fstream::out);
 
   for(size_t i=0; i<_rows; ++i) {
-    for(size_t j=0; j<_cols; ++j)
-      oFile << _element[i][j] << " ";
-    oFile << endl;
+    for(size_t j=0; j<_cols; ++j) {
+      fprintf(fid, "%.7e ", _element[i][j]);
+      //oFile << _element[i][j] << " ";
+    }
+    fprintf(fid, "\n");
+    //oFile << endl;
   }
-  oFile.close();
+  //oFile.close();
+  fclose(fid);
 }
 
 template <typename T>
@@ -441,7 +448,7 @@ template <typename T>
 void Matrix2D<T>::readAsBinary(string filename) {
   FILE* filePtr = fopen(filename.c_str(), "r");
   if(filePtr == NULL)
-    throw util::MyException("Failed to read binary file. File: " + filename + " may not exist");
+    throw runtime_error("Failed to read binary file. File: " + filename + " may not exist");
 
   fseek (filePtr, 0L, SEEK_SET);
 
@@ -485,47 +492,15 @@ void Matrix2D<T>::printDiag(int precision) const {
 
 template <typename T>
 void Matrix2D<T>::print(int precision) const {
-
-  int maxLength = 0;
-  for(size_t i=0; i<_rows; ++i) {
-    for(size_t j=0; j<_cols; ++j) {
-      double temp = abs((double) _element[i][j]);
-      double l = (temp > 1) ? (ceil(log10(temp))) : (precision);
-
-      if(_element[i][j] < 0)
-	++l;
-      if(l > maxLength)
-	maxLength = l;
-    }
-  }
-
-  char pFormat[20];
-  sprintf(pFormat, "%s%df", "%.", precision);
-  maxLength += (maxLength < precision) ? (precision) : (3);
-
-  cout << endl;
+  stringstream ss;
+  ss << precision;
+  string format = "%." + ss.str() + "f ";
   for(size_t i=0; i<_rows; i++) {
-    if(i == 0)
-      cout << " / ";
-    else if(i == _rows-1)
-      cout << " \\ ";
-    else
-      cout << "|  ";
-
-    for(size_t j=0; j<_cols; j++) {
-      char buf[20];
-      sprintf(buf, pFormat, (double) _element[i][j]);
-      cout << setw(maxLength) << buf << " ";
-    }
-
-    if(i == 0)
-      cout << " \\";
-    else if(i == _rows-1)
-      cout << " /";
-    else
-      cout << "  |";
-    cout << endl;
+    for(size_t j=0; j<_cols; j++)
+      printf(format.c_str(), _element[i][j]);
+    printf("\n");
   }
+  printf("\n");
 }
 
 // Load mat file
@@ -533,7 +508,7 @@ int getFileLineNumber(string filename) {
 
   FILE* file = fopen(filename.c_str(), "r");
   if(file == NULL)
-    throw util::MyException("Failed to open file: " + filename);
+    throw runtime_error("Failed to open file: " + filename);
 
   int ch, nLines = 0;
 
@@ -558,7 +533,7 @@ int getFileColumnNumber(string filename) {
   iFile.open(filename.c_str(), fstream::in);
 
   if(!iFile.is_open())
-    throw util::MyException("Failed to open file: " + filename);
+    throw runtime_error("Failed to open file: " + filename);
 
   int counter =0;
   if(!iFile.eof()) {
@@ -581,7 +556,7 @@ int getFileColumnNumber(string filename) {
   return counter;
 }
 
-double diagMatDet(const mat& m) {
+double diagMatDet(const Matrix2D<double>& m) {
   double det = 1;
   for(size_t i=0; i<m.getRows(); ++i)
     det *= m[i][i];
@@ -589,8 +564,9 @@ double diagMatDet(const mat& m) {
 }
 
 // To keep implementation seperated, explicitly instantiate all the template instances you'll need 
-template class Matrix2D<int>;
+// template class Matrix2D<int>;
+template class Matrix2D<float>;
 template class Matrix2D<double>;
 template Matrix2D<double>& Matrix2D<double>::operator = (const Matrix2D<long double>& rhs);
 template Matrix2D<double>::Matrix2D(const Matrix2D<long double>& mat);
-template class Matrix2D<long double>;
+// template class Matrix2D<long double>;
