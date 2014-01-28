@@ -6,21 +6,12 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 
-  size_t itr = 1e2;
-  ProgressBar pbar("Processing...");
-  for (size_t i=0; i<itr; ++i) {
-    pbar.refresh(i, itr);
-    usleep(1e5);
-  }
-
-  return 0;
-
-
   CmdParser cmdParser(argc, argv);
 
   cmdParser.addGroup("Generic options:")
     .add("input-file")
     .add("output-file", false)
+    .add("-f", "XDDD", false)
     .add("--type", "choose one of the following type of algorithm\n"
 	"0 -- quicksort\n"
 	"1 -- shellsort\n"
