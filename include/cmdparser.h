@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 #include <cassert>
 #include <sstream>
 #include <string>
@@ -51,14 +52,22 @@ class CmdParser {
       return *this;
     }
 
-    CmdParser& add(string option, const char* description, string defaultArg = "") {
-
-      bool optional = !defaultArg.empty();
-
-      Arg arg(option, description, optional, defaultArg);
+    CmdParser& add(string option, const char* description, bool mandatory) {
+      bool optional = !mandatory;
+      Arg arg(option, description, optional, "");
       _arguments[option] = arg;
       _options += arg.getDescription();
       _appendUsage(optional, option);
+
+      return *this;
+    }
+
+    CmdParser& add(string option, const char* description, const char* defaultArg) {
+
+      Arg arg(option, description, true, defaultArg);
+      _arguments[option] = arg;
+      _options += arg.getDescription();
+      _appendUsage(true, option);
 
       return *this;
     }
