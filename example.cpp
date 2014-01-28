@@ -11,7 +11,8 @@ int main(int argc, char* argv[]) {
   cmdParser.addGroup("Generic options:")
     .add("input-file")
     .add("output-file", false)
-    .add("-f", "XDDD", false)
+    .add("-f1", "filename #1")
+    .add("-f2", "filename #2", false)
     .add("--type", "choose one of the following type of algorithm\n"
 	"0 -- quicksort\n"
 	"1 -- shellsort\n"

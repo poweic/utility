@@ -52,7 +52,7 @@ class CmdParser {
       return *this;
     }
 
-    CmdParser& add(string option, const char* description, bool mandatory) {
+    CmdParser& add(string option, const char* description, bool mandatory = true) {
       bool optional = !mandatory;
       Arg arg(option, description, optional, "");
       _arguments[option] = arg;
