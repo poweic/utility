@@ -35,7 +35,6 @@ int main(int argc, char* argv[]) {
   bool verbose = cmdParser["--verbose"];
   string config_file = cmdParser["--config"];
 
-  //cmdParser.showAll();
   cout << a << endl;
   cout << b << endl;
   cout << type << endl;
