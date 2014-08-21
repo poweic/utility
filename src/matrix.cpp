@@ -37,19 +37,18 @@ Matrix2D<T>::Matrix2D(string filename, int max_rows, int max_cols): _element(NUL
 
   this->resize(max_rows, max_cols);
 
-  fstream iFile;
-  iFile.open(filename.c_str(), fstream::in);
+  ifstream fin(filename.c_str());
 
   size_t line_no = 0;
-  while(!iFile.eof()) {
+  while(!fin.eof()) {
     T* row_head = _element[line_no]; // + line_no*_cols;
     for(size_t c=0; c<_cols; ++c)
-      iFile >> row_head[c];
+      fin >> row_head[c];
     if(++line_no >= _rows)
       break;
   }
 
-  iFile.close();
+  fin.close();
 }
 
 template <typename T>
@@ -413,20 +412,9 @@ void Matrix2D<T>::resize(int rows, int cols) {
 }
 
 template <typename T>
-void Matrix2D<T>::saveas(string filename) const {
-  //fstream oFile;
+void Matrix2D<T>::saveas(string filename, int precision) const {
   FILE* fid = fopen(filename.c_str(), "w");
-  //oFile.open(filename.c_str(), fstream::out);
-
-  for(size_t i=0; i<_rows; ++i) {
-    for(size_t j=0; j<_cols; ++j) {
-      fprintf(fid, "%.7e ", _element[i][j]);
-      //oFile << _element[i][j] << " ";
-    }
-    fprintf(fid, "\n");
-    //oFile << endl;
-  }
-  //oFile.close();
+  this->print(precision, fid);
   fclose(fid);
 }
 
@@ -491,16 +479,15 @@ void Matrix2D<T>::printDiag(int precision) const {
 }
 
 template <typename T>
-void Matrix2D<T>::print(int precision) const {
+void Matrix2D<T>::print(int precision, FILE* fid) const {
   stringstream ss;
   ss << precision;
   string format = "%." + ss.str() + "f ";
   for(size_t i=0; i<_rows; i++) {
     for(size_t j=0; j<_cols; j++)
-      printf(format.c_str(), _element[i][j]);
-    printf("\n");
+      fprintf(fid, format.c_str(), _element[i][j]);
+    fprintf(fid, "\n");
   }
-  printf("\n");
 }
 
 // Load mat file
@@ -529,17 +516,16 @@ int getFileLineNumber(string filename) {
 }
 
 int getFileColumnNumber(string filename) {
-  fstream iFile;
-  iFile.open(filename.c_str(), fstream::in);
+  ifstream fin(filename.c_str());
 
-  if(!iFile.is_open())
+  if(!fin.is_open())
     throw runtime_error("Failed to open file: " + filename);
 
   int counter =0;
-  if(!iFile.eof()) {
+  if(!fin.eof()) {
 
     char buffer[65536];
-    iFile.getline(buffer, 65536);
+    fin.getline(buffer, 65536);
     string text = string(buffer);
     if(text.compare(text.size()-1, 1, " ") != 0)
       text.append(" ");
@@ -552,7 +538,7 @@ int getFileColumnNumber(string filename) {
       pos = pos2+1;
     }
   }
-  iFile.close();
+  fin.close();
   return counter;
 }
 
