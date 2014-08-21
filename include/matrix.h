@@ -88,12 +88,12 @@ public:
 
     // Utility Functions
     void resize(int rows, int cols);
-    void saveas(string filename) const;
+    void saveas(string filename, int precision = 1) const;
     void saveAsBinary(string filename) const;
     void readAsBinary(string filename);
 
     void row_sorting(int pivot_column);
-    void print(int precision = 1) const;
+    void print(int precision = 1, FILE* fid = stdout) const;
     void printDiag(int precision = 1) const;
 
     bool isMatched(const Matrix2D<T>& rhs) const;

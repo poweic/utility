@@ -258,10 +258,17 @@ class CmdParser {
 
     // ===== Static Utility Functions =====
     static bool isNumber(const std::string& s) {
-      string::const_iterator it = s.begin();
+
+      if (s.empty())
+	return false;
+
+      size_t start = (s[0] == '+' || s[0] == '-') ? 1 : 0;
+
+      string::const_iterator it = s.begin() + start;
       while (it != s.end() && std::isdigit(*it))
 	++it;
-      return !s.empty() && it == s.end();
+
+      return it == s.end();
     }
 
     static bool isFloat( string myString ) {
