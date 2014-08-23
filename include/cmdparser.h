@@ -220,10 +220,11 @@ class CmdParser {
     }
 
     bool miss(const Arg& arg) const {
+      const string ERR_MSG = "\33[31m[ERROR]\33[0m ";
       if (isNumber(arg.option))
-	cerr << "Missing argument " + arg.description << endl;
+	cerr << ERR_MSG << "Missing argument " + arg.description << endl;
       else
-	cerr << "Missing argument after " + arg.option << endl;
+	cerr << ERR_MSG << "Missing argument after " + arg.option << endl;
       return false;
     }
 
