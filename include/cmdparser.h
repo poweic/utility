@@ -102,6 +102,12 @@ class CmdParser {
       exit(-1);
     }
 
+    void printArgs() const {
+      for (int i=0; i<_argc; ++i)
+	clog << _argv[i] << " ";
+      clog << endl;
+    }
+
     bool isOptionLegal() {
       if ( this->_lookingForHelp() )
 	this->showUsageAndExit();
