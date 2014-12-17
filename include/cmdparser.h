@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <stdexcept>
 #include <algorithm>
 
 using namespace std;
@@ -41,6 +42,8 @@ class CmdParser {
     }
 
     CmdParser& add(string option, bool mandatory = true) {
+      assertValidOption(option);
+
       static size_t counter = 0;
       string description = option;
       option = int2str(++counter);
@@ -53,6 +56,8 @@ class CmdParser {
     }
 
     CmdParser& add(string option, const char* description, bool mandatory = true) {
+      assertValidOption(option);
+
       bool optional = !mandatory;
       Arg arg(option, description, optional, "");
       _arguments[option] = arg;
@@ -63,6 +68,7 @@ class CmdParser {
     }
 
     CmdParser& add(string option, const char* description, const char* defaultArg) {
+      assertValidOption(option);
 
       Arg arg(option, description, true, defaultArg);
       _arguments[option] = arg;
@@ -73,9 +79,6 @@ class CmdParser {
     }
 
     CmdParser& addGroup(string description) {
-      if (description[description.size() - 1] == ':')
-	description = description.substr(0, description.size() - 1);
-
       _options += "\n" + description + "\n";
       return *this;
     }
@@ -156,7 +159,7 @@ class CmdParser {
 
       string _defaultArgStr() const {
 	if (optional && default_arg != "")
-	  return getPadding() + "(default = " + default_arg + ")\n";
+	  return getPadding() + "\33[1;30m(default = " + default_arg + ")\33[0m\n";
 
 	return "";
       }
@@ -186,7 +189,19 @@ class CmdParser {
 	string arg(_argv[i]);
 
 	size_t pos = arg.find_first_of('=');
-	if (pos == string::npos) {
+	string left = arg.substr(0, pos);
+	string right = arg.substr(pos + 1);
+
+	if (pos != string::npos && isValidOption(left) ) {
+	  if (!has(left))
+	    return unknown(left);
+
+	  if (right.empty())
+	    return miss(_arguments[left]);
+
+	  _arguments[left].parameter = right;
+	}
+	else {
 
 	  if (has(arg)) {
 	    if (i+1 >= _argc)
@@ -201,18 +216,6 @@ class CmdParser {
 	    ++counter;
 	  }
 	}
-	else {
-	  string left = arg.substr(0, pos);
-	  string right = arg.substr(pos + 1);
-
-	  if (!has(left))
-	    return unknown(left);
-
-	  if (right.empty())
-	    return miss(_arguments[left]);
-
-	  _arguments[left].parameter = right;
-	}
       }
 
       map<string, Arg>::iterator itr = _arguments.begin();
@@ -223,6 +226,19 @@ class CmdParser {
       }
 
       return true;
+    }
+
+    bool isValidOption(const string& option) const {
+      // No space in option.
+      // Ex: --filename=a.txt, --file-name=a.txt both OK, But --file name=a.txt
+      // is outrageous. whitespace in "--file name" is not valid => return false
+      return option.find(' ') == string::npos;
+    }
+
+    void assertValidOption(const string& option) const {
+      if (!isValidOption(option))
+	throw std::runtime_error("\33[31m[Error]\33[0m Invalid option \"" 
+	    + option + "\". Don't use whitespace in option.\n");
     }
 
     bool miss(const Arg& arg) const {
