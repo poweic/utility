@@ -269,9 +269,7 @@ class CmdParser {
     }
 
     void _appendUsage(bool optional, std::string option) {
-      if (optional)
-	_usage += " [" + option + "]";
-      else
+      if (!optional)
 	_usage += " <" + option + ">";
     }
 
