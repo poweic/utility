@@ -12,8 +12,6 @@
 #include <stdexcept>
 #include <algorithm>
 
-using namespace std;
-
 class CmdParser {
 
   private:
@@ -21,7 +19,7 @@ class CmdParser {
     class AutoType {
       public:
 
-	AutoType(string str): _str(str) {}
+	AutoType(std::string str): _str(str) {}
 	operator std::string () { return _str; }
 	operator int    () { return str2int(_str); }
 	operator size_t () { return str2int(_str); }
@@ -33,19 +31,19 @@ class CmdParser {
 	}
 
       private:
-	string _str;
+	std::string _str;
     };
   
   public:
     CmdParser(int argc, char** argv): _argc(argc), _argv(argv), _usage(""), _options("") {
-      _usage = "Usage: " + string(_argv[0]) + " ";
+      _usage = "Usage: " + std::string(_argv[0]) + " ";
     }
 
-    CmdParser& add(string option, bool mandatory = true) {
+    CmdParser& add(std::string option, bool mandatory = true) {
       assertValidOption(option);
 
       static size_t counter = 0;
-      string description = option;
+      std::string description = option;
       option = int2str(++counter);
       _appendUsage(!mandatory, description);
 
@@ -55,7 +53,7 @@ class CmdParser {
       return *this;
     }
 
-    CmdParser& add(string option, const char* description, bool mandatory = true) {
+    CmdParser& add(std::string option, const char* description, bool mandatory = true) {
       assertValidOption(option);
 
       bool optional = !mandatory;
@@ -67,7 +65,7 @@ class CmdParser {
       return *this;
     }
 
-    CmdParser& add(string option, const char* description, const char* defaultArg) {
+    CmdParser& add(std::string option, const char* description, const char* defaultArg) {
       assertValidOption(option);
 
       Arg arg(option, description, true, defaultArg);
@@ -78,7 +76,7 @@ class CmdParser {
       return *this;
     }
 
-    CmdParser& addGroup(string description) {
+    CmdParser& addGroup(std::string description) {
       _options += "\n" + description + "\n";
       return *this;
     }
@@ -88,27 +86,25 @@ class CmdParser {
 
     }
 
-    AutoType operator[] (string option) const {
+    AutoType operator[] (std::string option) const {
       return find(option);
     }
 
-    AutoType find(string option) const {
-      map<string, Arg>::const_iterator itr = _arguments.find(option);
+    AutoType find(std::string option) const {
+      std::map<std::string, Arg>::const_iterator itr = _arguments.find(option);
       assert(itr != _arguments.end());
       return itr->second.parameter;
     }
 
     void showUsageAndExit() const {
-      cout << endl;
-      cout << _usage << endl;
-      cout << _options << endl;
+      std::cout << std::endl << _usage << std::endl << _options << std::endl;
       exit(-1);
     }
 
     void printArgs() const {
       for (int i=0; i<_argc; ++i)
-	clog << _argv[i] << " ";
-      clog << endl;
+	std::clog << _argv[i] << " ";
+      std::clog << std::endl;
     }
 
     bool isOptionLegal() {
@@ -119,9 +115,9 @@ class CmdParser {
     }
     
     void showAll() {
-      for (map<string, Arg>::iterator i=_arguments.begin(); i != _arguments.end(); ++i) {
-	const string& opt = i->first;
-	const string& parm = i->second.parameter;
+      for (std::map<std::string, Arg>::iterator i=_arguments.begin(); i != _arguments.end(); ++i) {
+	const std::string& opt = i->first;
+	const std::string& parm = i->second.parameter;
 
 	if (isNumber(opt))
 	  printf("argument #%d:	%s\n", str2int(opt), parm.c_str());
@@ -135,7 +131,7 @@ class CmdParser {
     struct Arg {
       Arg() {}
 
-      Arg(string opt, string des, bool o, string darg) {
+      Arg(std::string opt, std::string des, bool o, std::string darg) {
 	option = opt;
 	optional = o;
 	default_arg = darg;
@@ -143,42 +139,42 @@ class CmdParser {
 	parameter = default_arg;
       }
 
-      string _optionStr() const {
-	string opt = "  " + option;
+      std::string _optionStr() const {
+	std::string opt = "  " + option;
 	opt.resize(PADDING_RIGHT, ' ');
 	opt += "\t";
 	return opt;
       }
 
-      string getPadding() const {
-	string padding;
+      std::string getPadding() const {
+	std::string padding;
 	padding.resize(PADDING_RIGHT, ' ');
 	padding += "\t";
 	return padding;
       }
 
-      string _defaultArgStr() const {
+      std::string _defaultArgStr() const {
 	if (optional && default_arg != "")
 	  return getPadding() + "\33[1;30m(default = " + default_arg + ")\33[0m\n";
 
 	return "";
       }
 
-      string getDescription() const {
+      std::string getDescription() const {
 	return _optionStr() + description + "\n" + _defaultArgStr();
       }
 
-      string getDefaultArg() const {
+      std::string getDefaultArg() const {
 	return default_arg;
       }
 
       static const size_t PADDING_RIGHT = 24;
 
-      string option;
-      string description;
+      std::string option;
+      std::string description;
       bool optional;
-      string default_arg;
-      string parameter;
+      std::string default_arg;
+      std::string parameter;
     };
 
     bool parse() {
@@ -186,13 +182,13 @@ class CmdParser {
       size_t counter = 0;
 
       for(int i=1; i<_argc; ++i) {
-	string arg(_argv[i]);
+	std::string arg(_argv[i]);
 
 	size_t pos = arg.find_first_of('=');
-	string left = arg.substr(0, pos);
-	string right = arg.substr(pos + 1);
+	std::string left = arg.substr(0, pos);
+	std::string right = arg.substr(pos + 1);
 
-	if (pos != string::npos && isValidOption(left) ) {
+	if (pos != std::string::npos && isValidOption(left) ) {
 	  if (!has(left))
 	    return unknown(left);
 
@@ -218,7 +214,7 @@ class CmdParser {
 	}
       }
 
-      map<string, Arg>::iterator itr = _arguments.begin();
+      std::map<std::string, Arg>::iterator itr = _arguments.begin();
       for (; itr != _arguments.end(); ++itr) {
 	const Arg& arg = itr->second;
 	if (arg.parameter.empty() && !arg.optional)
@@ -228,34 +224,34 @@ class CmdParser {
       return true;
     }
 
-    bool isValidOption(const string& option) const {
+    bool isValidOption(const std::string& option) const {
       // No space in option.
       // Ex: --filename=a.txt, --file-name=a.txt both OK, But --file name=a.txt
       // is outrageous. whitespace in "--file name" is not valid => return false
-      return option.find(' ') == string::npos;
+      return option.find(' ') == std::string::npos;
     }
 
-    void assertValidOption(const string& option) const {
+    void assertValidOption(const std::string& option) const {
       if (!isValidOption(option))
 	throw std::runtime_error("\33[31m[Error]\33[0m Invalid option \"" 
 	    + option + "\". Don't use whitespace in option.\n");
     }
 
     bool miss(const Arg& arg) const {
-      const string ERR_MSG = "\33[31m[ERROR]\33[0m ";
+      const std::string ERR_MSG = "\33[31m[ERROR]\33[0m ";
       if (isNumber(arg.option))
-	cerr << ERR_MSG << "Missing argument " + arg.description << endl;
+	std::cerr << ERR_MSG << "Missing argument " + arg.description << std::endl;
       else
-	cerr << ERR_MSG << "Missing argument after " + arg.option << endl;
+	std::cerr << ERR_MSG << "Missing argument after " + arg.option << std::endl;
       return false;
     }
 
-    bool unknown(string opt) {
-      cerr << "Unknown option " + opt << endl;
+    bool unknown(std::string opt) {
+      std::cerr << "Unknown option " + opt << std::endl;
       return false;
     }
 
-    bool has(string arg) {
+    bool has(std::string arg) {
       return _arguments.count(arg) > 0;
     }
 
@@ -264,7 +260,7 @@ class CmdParser {
     }
 
     bool _lookingForHelp() const {
-      string help("--help");
+      std::string help("--help");
       for (int i=1; i<_argc; ++i) {
 	if (help.compare(_argv[i]) == 0)
 	  return true;
@@ -272,7 +268,7 @@ class CmdParser {
       return false;
     }
 
-    void _appendUsage(bool optional, string option) {
+    void _appendUsage(bool optional, std::string option) {
       if (optional)
 	_usage += " [" + option + "]";
       else
@@ -287,48 +283,48 @@ class CmdParser {
 
       size_t start = (s[0] == '+' || s[0] == '-') ? 1 : 0;
 
-      string::const_iterator it = s.begin() + start;
+      std::string::const_iterator it = s.begin() + start;
       while (it != s.end() && std::isdigit(*it))
 	++it;
 
       return it == s.end();
     }
 
-    static bool isFloat( string myString ) {
+    static bool isFloat( std::string myString ) {
       std::istringstream iss(myString);
       float f;
-      iss >> noskipws >> f; // noskipws considers leading whitespace invalid
+      iss >> std::noskipws >> f; // noskipws considers leading whitespace invalid
       // Check the entire string was consumed and if either failbit or badbit is set
       return iss.eof() && !iss.fail(); 
     }
 
-    static string int2str(int n) {
-      stringstream ss;
+    static std::string int2str(int n) {
+      std::stringstream ss;
       ss << n;
       return ss.str();
     }
 
-    static string replace_all(const string& str, const string &token, const string &s) {
-      string result(str);
+    static std::string replace_all(const std::string& str, const std::string &token, const std::string &s) {
+      std::string result(str);
       size_t pos = 0;
-      while((pos = result.find(token, pos)) != string::npos) {
+      while((pos = result.find(token, pos)) != std::string::npos) {
 	result.replace(pos, token.size(), s);
 	pos += s.size();
       }
       return result;
     }
     
-    static int str2int(string str) {
+    static int str2int(std::string str) {
       assert(isNumber(str));
       return ::atoi(str.c_str());
     }
 
-    static float str2float(string str) {
+    static float str2float(std::string str) {
       assert(isFloat(str));
       return ::atof(str.c_str());
     }
 
-    static double str2double(string str) {
+    static double str2double(std::string str) {
       assert(isFloat(str));
       return ::atof(str.c_str());
     }
@@ -336,9 +332,9 @@ class CmdParser {
     int _argc;
     char** _argv;
 
-    string _usage;
-    string _options;
-    map<string, Arg> _arguments;
+    std::string _usage;
+    std::string _options;
+    std::map<std::string, Arg> _arguments;
 };
 
 #endif // _CMD_PARSER_H
