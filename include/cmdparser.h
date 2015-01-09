@@ -45,7 +45,7 @@ class CmdParser {
       static size_t counter = 0;
       std::string description = option;
       option = int2str(++counter);
-      _appendUsage(!mandatory, description);
+      _appendArugmentToUsage(!mandatory, description);
 
       Arg arg(option, description, !mandatory, "");
       _arguments[option] = arg;
@@ -60,7 +60,7 @@ class CmdParser {
       Arg arg(option, description, optional, "");
       _arguments[option] = arg;
       _options += arg.getDescription();
-      _appendUsage(optional, option);
+      _appendOptionsToUsage(optional, option);
 
       return *this;
     }
@@ -71,7 +71,7 @@ class CmdParser {
       Arg arg(option, description, true, defaultArg);
       _arguments[option] = arg;
       _options += arg.getDescription();
-      _appendUsage(true, option);
+      _appendOptionsToUsage(true, option);
 
       return *this;
     }
@@ -97,7 +97,7 @@ class CmdParser {
     }
 
     void showUsageAndExit() const {
-      std::cout << std::endl << _usage << std::endl << _options << std::endl;
+      std::cout << std::endl << _usage << " [options]" << std::endl << _options << std::endl;
       exit(-1);
     }
 
@@ -268,7 +268,14 @@ class CmdParser {
       return false;
     }
 
-    void _appendUsage(bool optional, std::string option) {
+    void _appendArugmentToUsage(bool optional, const std::string& option) {
+      if (!optional)
+	_usage += " <" + option + ">";
+      else
+	_usage += " [" + option + "]";
+    }
+
+    void _appendOptionsToUsage(bool optional, const std::string& option) {
       if (!optional)
 	_usage += " <" + option + ">";
     }
