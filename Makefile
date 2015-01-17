@@ -1,5 +1,14 @@
-CC=g++ -Wall
-CXX=g++ -Wall
+BASEPROJ?=.
+
+FILENAME=$(BASEPROJ)/config.mk
+ifeq ("$(wildcard $(FILENAME))",)
+else
+include $(BASEPROJ)/config.mk
+endif
+
+CFG_CC?=g++-4.9 -Wall
+CFG_CXX?=g++-4.9 -Wall
+
 CFLAGS=
 
 INCLUDE=-I include/
@@ -20,13 +29,13 @@ OBJ=$(addprefix obj/, $(OBJ_TEMP:.c=.o))
 #=================================================================
 
 .PHONY: debug o3
-debug: CXX+=-DDEBUG -g
+debug: CFG_CXX+=-DDEBUG -g
 debug: all
-o3: CXX+=-o3
+o3: CFG_CXX+=-o3
 o3: all
 
 example: example.cpp libs
-	$(CXX) $(CPPFLAGS) -o $@ $< -L lib/ -lmatrix -lpbar
+	$(CFG_CXX) $(CPPFLAGS) -o $@ $< -L lib/ -lmatrix -lpbar
 
 libs: $(OBJ) $(addprefix lib/, $(LIBS))
 lib/lib%.a: %.o %.cpp
@@ -41,12 +50,12 @@ ctags:
 	@ctags -R *
 #=================================================================
 obj/%.o: %.c
-	$(CC) $(CFLAGS) $(EXTRA_FLAGS) -o $@ -c $<
+	$(CFG_CC) $(CFLAGS) $(EXTRA_FLAGS) -o $@ -c $<
 obj/%.o: %.cpp
-	$(CXX) $(CPPFLAGS) $(EXTRA_FLAGS) -o $@ -c $<
+	$(CFG_CXX) $(CPPFLAGS) $(EXTRA_FLAGS) -o $@ -c $<
 
 obj/%.d: %.cpp
-	@$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
+	@$(CFG_CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,obj/\1.o $@ : ,g' < $@.$$$$ > $@;\
 	rm -f $@.$$$$
 
